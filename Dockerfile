@@ -34,13 +34,14 @@ ENV PATH="/app/bin:$PATH"
 COPY requirements.txt .
 
 # Use docker buildkit for faster builds and cache pip
+# hadolint ignore=DL3013,DL3042
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip python3 -m pip install --upgrade pip wheel \
     && python3 -m pip install --upgrade --requirement requirements.txt
 
 COPY . /app
 
 ###
-# Runable Image
+# Runtime Image
 ###
 
 FROM python:3.9-slim-bullseye AS runtime-image
