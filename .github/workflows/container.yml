@@ -33,6 +33,11 @@ jobs:
         with:
           dockerfile: Dockerfile
 
+      - name: Lint Dockerfile-github
+        uses: hadolint/hadolint-action@v1.6.0
+        with:
+          dockerfile: Dockerfile-github
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
@@ -63,7 +68,7 @@ jobs:
           docker buildx build --push \
           --tag $IMAGE_ID:$VERSION \
           --platform linux/armhf,linux/aarch64,linux/amd64 \
-          --file Dockerfile .
+          --file Dockerfile-github .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
