@@ -59,7 +59,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     libjpeg62-turbo \
     libopenjp2-7 \
     libtiff5 \
-    libxcb1
+    libxcb1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd -g 1000 pycryptobot \
