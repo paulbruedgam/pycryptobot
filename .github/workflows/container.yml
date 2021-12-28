@@ -82,6 +82,7 @@ jobs:
           --file Dockerfile .
 
       - name: Push Image
+        needs: Build Image
         run: |
           docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
@@ -90,12 +91,14 @@ jobs:
           --output "type=image,push=true" \
           --file Dockerfile .
 
-      - name: Inspect image 
+      - name: Inspect image
+        needs: Push Image
         run: |
           docker buildx imagetools inspect ${{ steps.tag_image.outputs.IMAGE_ID }}:${{ steps.tag_image.outputs.VERSION }} 
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
+        needs: Push Image
         with:
           image-ref: "${{ steps.tag_image.outputs.IMAGE_ID }}:${{ steps.tag_image.outputs.VERSION }}"
           format: 'template' 
@@ -108,6 +111,7 @@ jobs:
           
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
+        needs: Run Trivy vulnerability scanner
         if: always() 
         with:
           sarif_file: 'trivy-results.sarif'
