@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1
-###
+
 # Build Image
-###
 FROM python:3.9-slim-bullseye AS compile-image
 
 # Update the base image and install requirements
@@ -12,16 +11,17 @@ FROM python:3.9-slim-bullseye AS compile-image
 # liblapack-dev:
 # libjpeg62-turbo-dev: needed for build pillow
 # https://pillow.readthedocs.io/en/stable/installation.html#building-on-linux
+# hadolint ignore=DL3008
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get upgrade --assume-yes \
     && apt-get install --assume-yes --no-install-recommends \
-    build-essential=12.9 \
-    gfortran=4:10.2.1-1 \
-    libblas-dev=3.9.0-3 \
-    libjpeg62-turbo-dev=1:2.0.6-4 \
-    liblapack-dev=3.9.0-3 \
-    python3-dev=3.9.2-3 \
+    build-essential \
+    gfortran \
+    libblas-dev \
+    libjpeg62-turbo-dev \
+    liblapack-dev \
+    python3-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -35,26 +35,31 @@ COPY requirements.txt .
 
 # Use docker buildkit for faster builds and cache pip
 # hadolint ignore=DL3013,DL3042
-RUN --mount=type=cache,mode=0755,target=/root/.cache/pip python3 -m pip install --upgrade pip wheel \
-    && python3 -m pip install --upgrade --requirement requirements.txt
+RUN --mount=type=cache,mode=0755,target=/tmp/.buildx-cache/.cache/pip python3 -m pip install --upgrade pip wheel \
+    && python3 -m pip install --upgrade --requirement requirements.txt --cache-dir /tmp/.buildx-cache/.cache/pip
 
 COPY . /app
 
-###
 # Runtime Image
-###
-
 FROM python:3.9-slim-bullseye AS runtime-image
+
+ARG REPO=whittlem/pycryptobot
+
+LABEL org.opencontainers.image.source https://github.com/${REPO}
 
 # Update the base image and install requirements
 # libatlas3-base:
 # libjpeg62-turbo: needed to run pillow
+# hadolint ignore=DL3008
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get upgrade --assume-yes \
     && apt-get install --assume-yes --no-install-recommends \
-    libatlas3-base=3.10.3-10 \
-    libjpeg62-turbo=1:2.0.6-4 \
+    libatlas3-base \
+    libjpeg62-turbo \
+    libopenjp2-7 \
+    libtiff5 \
+    libxcb1
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd -g 1000 pycryptobot \
@@ -70,6 +75,7 @@ USER pycryptobot
 
 # Make sure we use the virtualenv:
 ENV PATH="/app/bin:$PATH"
+
 # Make sure we have a config dir for matplotlib when we not the root user
 ENV MPLCONFIGDIR="/app/.config/matplotlib"
 

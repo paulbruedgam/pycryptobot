@@ -5,12 +5,11 @@ on:
     # Publish `main` as Docker `latest` image.
     branches:
       - main
-      - docker
+      - docker*
 
     # Publish `v1.2.3` tags as releases.
     tags:
-      - 1*
-      - 2*
+      - '**' # All tags kick off a new container build
 
   # Run tests for any PRs.
   pull_request:
@@ -33,11 +32,6 @@ jobs:
         with:
           dockerfile: Dockerfile
 
-      - name: Lint Dockerfile-github
-        uses: hadolint/hadolint-action@v1.6.0
-        with:
-          dockerfile: Dockerfile-github
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
@@ -45,10 +39,20 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v1
       
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Log into registry
         run: echo "${{ secrets.PACKAGE_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build and Push image
+      - name: Tag Image
+        id: tag_image
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
 
@@ -63,19 +67,47 @@ jobs:
 
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
+          echo '::set-output name=IMAGE_ID::'$IMAGE_ID
+          echo '::set-output name=VERSION::'$VERSION
 
-          # Build and Publish container image
-          docker buildx build --push \
-          --tag $IMAGE_ID:$VERSION \
-          --platform linux/armhf,linux/aarch64,linux/amd64 \
-          --file Dockerfile-github .
+      - name: Build Image
+        run: |
+          docker buildx build \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --cache-to "type=local,dest=/tmp/.buildx-cache" \
+          --build-arg REPO=${{ github.repository }} \
+          --tag ${{ steps.tag_image.outputs.IMAGE_ID }}:${{ steps.tag_image.outputs.VERSION }} \
+          --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
+          --output "type=image,push=false" \
+          --file Dockerfile .
+
+      - name: Push Image
+        run: |
+          docker buildx build \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --tag ${{ steps.tag_image.outputs.IMAGE_ID }}:${{ steps.tag_image.outputs.VERSION }} \
+          --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
+          --output "type=image,push=true" \
+          --file Dockerfile .
+
+      - name: Inspect image 
+        run: |
+          docker buildx imagetools inspect ${{ steps.tag_image.outputs.IMAGE_ID }}:${{ steps.tag_image.outputs.VERSION }} 
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "ghcr.io/${{ github.repository }}/$IMAGE_NAME:${{ github.sha }}"
-          format: 'table'
+          image-ref: "${{ steps.tag_image.outputs.IMAGE_ID }}:${{ steps.tag_image.outputs.VERSION }}"
+          format: 'template' 
+          template: '@/contrib/sarif.tpl'
+          output: 'trivy-results.sarif'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        if: always() 
+        with:
+          sarif_file: 'trivy-results.sarif'
