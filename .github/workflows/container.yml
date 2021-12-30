@@ -116,7 +116,7 @@ jobs:
       - name: Inspect image
         if: success()
         run: |
-          docker buildx imagetools inspect ${{ steps.tag_image.outputs.IMAGE_ID }}:${{ steps.tag_image.outputs.VERSION }} 
+          docker buildx imagetools inspect ${{ needs.prepare.outputs.IMAGE_ID }}:${{ needs.prepare.outputs.VERSION }}
 
   test:
     runs-on: ubuntu-latest
