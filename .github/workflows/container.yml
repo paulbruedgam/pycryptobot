@@ -33,11 +33,10 @@ jobs:
         with:
           dockerfile: Dockerfile
 
-  prepare-build:
+  prepare:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     needs: lint
-    id: prepare-build
 
     steps:
       - uses: actions/checkout@v2
@@ -66,7 +65,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
-    needs: prepare-build
+    needs: prepare
 
     steps:
       - uses: actions/checkout@v2
@@ -96,7 +95,7 @@ jobs:
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
           --build-arg REPO=${{ github.repository }} \
-          --tag ${{ jobs.prepare-build.steps.tag_image.outputs.IMAGE_ID }}:${{ jobs.prepare-build.steps.tag_image.outputs.VERSION }}
+          --tag ${{ jobs.prepare.steps.tag_image.outputs.IMAGE_ID }}:${{ jobs.prepare.steps.tag_image.outputs.VERSION }}
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile .
@@ -105,7 +104,7 @@ jobs:
         run: |
           docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --tag ${{ jobs.prepare-build.steps.tag_image.outputs.IMAGE_ID }}:${{ jobs.prepare-build.steps.tag_image.outputs.VERSION }}
+          --tag ${{ jobs.prepare.steps.tag_image.outputs.IMAGE_ID }}:${{ jobs.prepare.steps.tag_image.outputs.VERSION }}
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=true" \
           --file Dockerfile .
