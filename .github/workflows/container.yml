@@ -99,7 +99,7 @@ jobs:
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
           --build-arg REPO=${{ github.repository }} \
-          --tag ${{ needs.prepare.steps.outputs.IMAGE_ID }}:${{ needs.prepare.steps.outputs.VERSION }}
+          --tag ${{ needs.prepare.outputs.IMAGE_ID }}:${{ needs.prepare.outputs.VERSION }}
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile .
@@ -108,7 +108,7 @@ jobs:
         run: |
           docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --tag ${{ needs.prepare.steps.outputs.IMAGE_ID }}:${{ needs.prepare.steps.outputs.VERSION }}
+          --tag ${{ needs.prepare.outputs.IMAGE_ID }}:${{ needs.prepare.outputs.VERSION }}
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=true" \
           --file Dockerfile .
