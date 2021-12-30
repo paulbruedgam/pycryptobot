@@ -37,6 +37,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     needs: lint
+    # Map a step output to a job output
+    outputs:
+      IMAGE_ID: ${{ steps.tag_image.outputs.IMAGE_ID }}
+      VERSION: ${{ steps.tag_image.outputs.VERSION }}
 
     steps:
       - uses: actions/checkout@v2
@@ -95,7 +99,7 @@ jobs:
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
           --build-arg REPO=${{ github.repository }} \
-          --tag ${{ jobs.prepare.steps.tag_image.outputs.IMAGE_ID }}:${{ jobs.prepare.steps.tag_image.outputs.VERSION }}
+          --tag ${{ needs.prepare.steps.outputs.IMAGE_ID }}:${{ needs.prepare.steps.outputs.VERSION }}
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile .
@@ -104,7 +108,7 @@ jobs:
         run: |
           docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --tag ${{ jobs.prepare.steps.tag_image.outputs.IMAGE_ID }}:${{ jobs.prepare.steps.tag_image.outputs.VERSION }}
+          --tag ${{ needs.prepare.steps.outputs.IMAGE_ID }}:${{ needs.prepare.steps.outputs.VERSION }}
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=true" \
           --file Dockerfile .
