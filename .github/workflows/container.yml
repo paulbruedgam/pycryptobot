@@ -17,6 +17,8 @@ on:
 
 env:
   IMAGE_NAME: pycryptobot
+  # Enable Docker Buildkit
+  DOCKER_BUILDKIT: 1
 
 jobs:
   lint:
@@ -31,12 +33,41 @@ jobs:
         with:
           dockerfile: Dockerfile
 
+  prepare-build:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Tag Image
+        id: tag_image
+        run: |
+          echo "IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME" >> $GITHUB_ENV
+
+          # Change all uppercase to lowercase
+          echo "IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')" >> $GITHUB_ENV
+
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "main" ] && VERSION=latest
+
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          echo '::set-output name=IMAGE_ID::'$IMAGE_ID
+          echo '::set-output name=VERSION::'$VERSION
+
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
   build:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
-    needs: lint
+    needs: prepare-build
 
     steps:
       - uses: actions/checkout@v2
@@ -59,25 +90,6 @@ jobs:
 
       - name: Log into registry
         run: echo "${{ secrets.PACKAGE_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Tag Image
-        id: tag_image
-        run: |
-          IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
-
-          # Change all uppercase to lowercase
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-
-          # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "main" ] && VERSION=latest
-
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-          echo '::set-output name=IMAGE_ID::'$IMAGE_ID
-          echo '::set-output name=VERSION::'$VERSION
 
       - name: Build Image
         run: |
