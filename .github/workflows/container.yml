@@ -37,6 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     needs: lint
+    id: prepare-build
 
     steps:
       - uses: actions/checkout@v2
