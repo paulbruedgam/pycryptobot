@@ -19,11 +19,8 @@ env:
   IMAGE_NAME: pycryptobot
 
 jobs:
-  # Build and push image to GitHub Packages.
-  # See also https://docs.docker.com/docker-hub/builds/
-  push:
+  lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 720
     if: github.event_name == 'push'
 
     steps:
@@ -33,6 +30,16 @@ jobs:
         uses: hadolint/hadolint-action@v1.6.0
         with:
           dockerfile: Dockerfile
+
+  # Build and push image to GitHub Packages.
+  # See also https://docs.docker.com/docker-hub/builds/
+  build:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v2
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -78,6 +85,7 @@ jobs:
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
           --build-arg REPO=${{ github.repository }} \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
           --tag ${{ steps.tag_image.outputs.IMAGE_ID }}:${{ steps.tag_image.outputs.VERSION }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
@@ -97,9 +105,14 @@ jobs:
         run: |
           docker buildx imagetools inspect ${{ steps.tag_image.outputs.IMAGE_ID }}:${{ steps.tag_image.outputs.VERSION }} 
 
+  test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    needs: build
+
+    steps:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
-        if: success()
         with:
           image-ref: "${{ steps.tag_image.outputs.IMAGE_ID }}:${{ steps.tag_image.outputs.VERSION }}"
           format: 'template' 
