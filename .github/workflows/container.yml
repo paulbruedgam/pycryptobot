@@ -55,9 +55,6 @@ jobs:
           # Use Docker `latest` tag convention
           [ "$VERSION" == "main" ] && VERSION=latest
 
-          echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
           echo '::set-output name=IMAGE_ID::'$IMAGE_ID
@@ -98,7 +95,7 @@ jobs:
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
           --build-arg REPO=${{ github.repository }} \
-          --tag ${{ env.IMAGE_ID }}:${{ env.VERSION }} \
+          --tag ${{ jobs.prepare-build.steps.tag_image.outputs.IMAGE_ID }}:${{ jobs.prepare-build.steps.tag_image.outputs.VERSION }}
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile .
@@ -107,7 +104,7 @@ jobs:
         run: |
           docker buildx build \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --tag ${{ env.IMAGE_ID }}:${{ env.VERSION }} \
+          --tag ${{ jobs.prepare-build.steps.tag_image.outputs.IMAGE_ID }}:${{ jobs.prepare-build.steps.tag_image.outputs.VERSION }}
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=true" \
           --file Dockerfile .
