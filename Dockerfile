@@ -38,6 +38,8 @@ FROM python:3.9-slim-bullseye AS compile-image
 # - statsmodels (https://www.statsmodels.org/stable/install.html)
 #   - Python packages: Cython, NumPy, Pandas, SciPy, Patsy
 #
+# Note: OpenBLAS packages not available on all arm versions. Using libblas-dev and libblas3 instead
+#
 # hadolint ignore=DL3008
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update --quiet \
@@ -45,7 +47,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get install --assume-yes --no-install-recommends --quiet \
         build-essential \
         gfortran \
-        libopenblas-dev \
+        libblas-dev \
         liblapack-dev \
         python3-dev \
     && apt-get clean \
