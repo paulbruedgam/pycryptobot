@@ -81,10 +81,10 @@ FROM compile-base AS compile-stage1
 
 # Use docker buildkit for faster builds and cache pip
 # hadolint ignore=DL3042
-RUN --mount=type=cache,mode=0755,target=${CACHE_DIR} \
+RUN --mount=type=cache,mode=0755,target="${CACHE_DIR}" \
     python3 -m pip install \
       --upgrade \
-      --cache-dir ${CACHE_DIR} \
+      --cache-dir "${CACHE_DIR}" \
       --requirement requirements_part1.txt
 
 # Build Compile Image Part2
@@ -92,10 +92,10 @@ FROM compile-stage1 AS compile-stage2
 
 # Use docker buildkit for faster builds and cache pip
 # hadolint ignore=DL3042
-RUN --mount=type=cache,mode=0755,target=${CACHE_DIR} \
+RUN --mount=type=cache,mode=0755,target="${CACHE_DIR}" \
     python3 -m pip install \
       --upgrade \
-      --cache-dir ${CACHE_DIR} \
+      --cache-dir "${CACHE_DIR}" \
       --requirement requirements_part2.txt
 
 # Build Compile Image Part3
@@ -103,10 +103,10 @@ FROM compile-stage2 AS compile-stage3
 
 # Use docker buildkit for faster builds and cache pip
 # hadolint ignore=DL3042
-RUN --mount=type=cache,mode=0755,target=${CACHE_DIR} \
+RUN --mount=type=cache,mode=0755,target="${CACHE_DIR}" \
     python3 -m pip install \
       --upgrade \
-      --cache-dir ${CACHE_DIR} \
+      --cache-dir "${CACHE_DIR}" \
       --requirement requirements_part3.txt \
     && python3 -m pip uninstall --yes wheel
 
