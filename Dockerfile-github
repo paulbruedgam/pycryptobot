@@ -67,13 +67,13 @@ WORKDIR /app
 # Make sure we use the virtualenv:
 ENV PATH="/app/bin:$PATH"
 
-COPY requirements.txt /app
+COPY requirements.txt .
 
 # Use docker buildkit for faster builds and cache pip
 # hadolint ignore=DL3013,DL3042
 RUN python3 -m pip install \
       --upgrade \
-      numpy pip wheel \
+      numpy pip setuptools wheel \
     && sed -i '/^pytest/d' requirements.txt \
     && sed -E '/^(matplotlib|pandas|statsmodels)/d' requirements.txt > requirements_part1.txt \
     && grep -E '^(matplotlib|pandas)' requirements.txt > requirements_part2.txt \
@@ -118,8 +118,7 @@ ARG REPO=whittlem/pycryptobot
 LABEL org.opencontainers.image.source https://github.com/${REPO}
 
 # Update the base image and install requirements
-# libatlas3-base:
-# libjpeg62-turbo: needed to run pillow
+# Explanations for packages in dev part
 # hadolint ignore=DL3008
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
