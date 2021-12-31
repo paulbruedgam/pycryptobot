@@ -97,6 +97,7 @@ jobs:
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
           --build-arg REPO=${{ github.repository }} \
+          --build-arg CACHE_DIR=/tmp/.buildx-cache/pip  \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile-github .
@@ -134,6 +135,7 @@ jobs:
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
           --build-arg REPO=${{ github.repository }} \
+          --build-arg CACHE_DIR=/tmp/.buildx-cache/pip  \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile-github .
@@ -171,6 +173,7 @@ jobs:
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
           --build-arg REPO=${{ github.repository }} \
+          --build-arg CACHE_DIR=/tmp/.buildx-cache/pip  \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile-github .
@@ -208,6 +211,7 @@ jobs:
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
           --build-arg REPO=${{ github.repository }} \
+          --build-arg CACHE_DIR=/tmp/.buildx-cache/pip  \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile-github .
@@ -248,6 +252,7 @@ jobs:
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,dest=/tmp/.buildx-cache" \
           --build-arg REPO=${{ github.repository }} \
+          --build-arg CACHE_DIR=/tmp/.buildx-cache/pip  \
           --tag ${{ needs.prepare.outputs.IMAGE_ID }}:${{ needs.prepare.outputs.VERSION }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
