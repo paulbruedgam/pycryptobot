@@ -98,7 +98,7 @@ FROM compile-stage2 AS compile-stage3
 RUN python3 -m pip install \
       --upgrade \
       --requirement requirements_part3.txt \
-    && python3 -m pip uninstall --yes wheel \
+    && python3 -m pip uninstall --yes wheel \
     && rm -f requirements*.txt
 
 COPY . /app
