@@ -9,6 +9,12 @@ FROM python:3.9-slim-bullseye AS compile-image
 #   - python3-dev: contains the header files you need to build Python extensions (needed for ARM)
 #
 # - Pillow (https://pillow.readthedocs.io/en/stable/installation.html#building-on-linux)
+#   - Python packages: setuptools tk
+#   - Linux packages (dev): libfreetype6-dev libfribidi-dev libharfbuzz-dev libjpeg62-turbo-dev
+#                           liblcms2-dev libopenjp2-7-dev libtiff5-dev libwebp-dev libxcb1-dev
+#                           tcl8.6-dev tk8.6-dev zlib1g-dev
+#
+#   - Linux packages (prod): libfreetype6 libjpeg62-turbo libopenjp2-7 libtiff5 libxcb1
 #
 # - matplotlib (https://matplotlib.org/stable/devel/dependencies.html)
 #   - Python packages: NumPy, Pillow
@@ -19,8 +25,8 @@ FROM python:3.9-slim-bullseye AS compile-image
 #
 # - NumPy (https://numpy.org/devdocs/user/building.html)
 #   - Python packages: Cython
-#   - Linux packages (dev): gcc gfortran python3-dev libopenblas-dev liblapack-dev
-#   - Linux packages (prod): libopenblas-base libatlas3-base
+#   - Linux packages (dev): gcc gfortran liblapack-dev libopenblas-dev
+#   - Linux packages (prod): libatlas3-base libopenblas-base
 #   - ToDo:
 #       - https://numpy.org/devdocs/dev/development_environment.html#running-tests
 #       - Evaluate python3 -c 'import numpy as np; np.test("full", verbose=2)'
@@ -32,8 +38,8 @@ FROM python:3.9-slim-bullseye AS compile-image
 #       - Evaluate python3 -c 'import pandas as pd; pd.test()'
 #
 # - scipy (https://scipy.github.io/devdocs/building/linux.html#id1)
-#   - Linux packages (dev): gcc g++ gfortran python3-dev libopenblas-dev liblapack-dev
-#   - Linux packages (prod): libopenblas-base libatlas3-base
+#   - Linux packages (dev): gcc g++ gfortran liblapack-dev libopenblas-dev
+#   - Linux packages (prod): libatlas3-base libopenblas-base
 #
 # - statsmodels (https://www.statsmodels.org/stable/install.html)
 #   - Python packages: Cython, NumPy, Pandas, SciPy, Patsy
@@ -42,20 +48,22 @@ FROM python:3.9-slim-bullseye AS compile-image
 #
 # hadolint ignore=DL3008
 RUN export DEBIAN_FRONTEND=noninteractive \
-    && apt-get update --quiet \
-    && apt-get upgrade --assume-yes --quiet \
-    && apt-get install --assume-yes --no-install-recommends --quiet \
+    && apt-get update -qq \
+    && apt-get upgrade -qq \
+    && apt-get install --no-install-recommends -qq \
         build-essential \
         gfortran \
         libblas-dev \
+        libjpeg62-turbo-dev \
         liblapack-dev \
         python3-dev \
+        > /dev/null \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && python3 -m venv /app
 
 WORKDIR /app
 
-RUN python3 -m venv /app
 # Make sure we use the virtualenv:
 ENV PATH="/app/bin:$PATH"
 
@@ -64,7 +72,7 @@ COPY requirements.txt .
 ARG CACHE_DIR="/tmp/.buildx-cache/.cache/pip"
 # Use docker buildkit for faster builds and cache pip
 # hadolint ignore=DL3013,DL3042
-RUN --mount=type=cache,mode=0755,target=${CACHE_DIR} python3 -m pip install --upgrade pip wheel \
+RUN --mount=type=cache,mode=0755,target=${CACHE_DIR} python3 -m pip install --upgrade numpy pip setuptools wheel \
     && python3 -m pip install --upgrade --requirement requirements.txt --cache-dir ${CACHE_DIR} \
     && python3 -m pip uninstall --yes wheel
 
@@ -78,14 +86,14 @@ ARG REPO=whittlem/pycryptobot
 LABEL org.opencontainers.image.source https://github.com/${REPO}
 
 # Update the base image and install requirements
-# libatlas3-base:
-# libjpeg62-turbo: needed to run pillow
+# Explanations for packages in dev part
 # hadolint ignore=DL3008
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get upgrade --assume-yes \
     && apt-get install --assume-yes --no-install-recommends \
         libatlas3-base \
+        libfreetype6 \
         libjpeg62-turbo \
         libopenjp2-7 \
         libtiff5 \
