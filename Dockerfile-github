@@ -55,7 +55,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         > /dev/null \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && python3 -m venv /app && ls -la /app
+    && python3 -m venv /app
 
 WORKDIR /app
 
