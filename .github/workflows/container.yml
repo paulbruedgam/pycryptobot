@@ -19,7 +19,6 @@ env:
   IMAGE_NAME: pycryptobot
   # Enable Docker Buildkit
   DOCKER_BUILDKIT: 1
-  DOCKERFILE: Dockerfile-github
 
 jobs:
   lint:
@@ -32,7 +31,7 @@ jobs:
       - name: Lint Dockerfile
         uses: hadolint/hadolint-action@v1.6.0
         with:
-          dockerfile: ${DOCKERFILE}
+          dockerfile: Dockerfile-github
 
   prepare:
     runs-on: ubuntu-latest
@@ -100,7 +99,7 @@ jobs:
           --build-arg REPO=${{ github.repository }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
-          --file ${DOCKERFILE} .
+          --file Dockerfile-github .
 
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -137,7 +136,7 @@ jobs:
           --build-arg REPO=${{ github.repository }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
-          --file ${DOCKERFILE} .
+          --file Dockerfile-github .
 
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -174,7 +173,7 @@ jobs:
           --build-arg REPO=${{ github.repository }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
-          --file ${DOCKERFILE} .
+          --file Dockerfile-github .
 
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -211,7 +210,7 @@ jobs:
           --build-arg REPO=${{ github.repository }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
-          --file ${DOCKERFILE} .
+          --file Dockerfile-github .
 
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -252,7 +251,7 @@ jobs:
           --tag ${{ needs.prepare.outputs.IMAGE_ID }}:${{ needs.prepare.outputs.VERSION }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
-          --file ${DOCKERFILE} .
+          --file Dockerfile-github .
 
       - name: Push Image
         run: |
@@ -261,7 +260,7 @@ jobs:
           --tag ${{ needs.prepare.outputs.IMAGE_ID }}:${{ needs.prepare.outputs.VERSION }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=true" \
-          --file ${DOCKERFILE} .
+          --file Dockerfile-github .
 
       - name: Inspect image
         if: success()
