@@ -271,7 +271,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
-    needs: build
+    needs: push
 
     steps:
       - name: Run Trivy vulnerability scanner
