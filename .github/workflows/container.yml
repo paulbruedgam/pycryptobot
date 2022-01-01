@@ -95,7 +95,7 @@ jobs:
           docker buildx build \
           --target=compile-base \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,dest=/tmp/.buildx-cache-new" \
+          --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache-new" \
           --build-arg REPO=${{ github.repository }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
@@ -138,7 +138,7 @@ jobs:
           docker buildx build \
           --target=compile-stage1 \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,dest=/tmp/.buildx-cache-new" \
+          --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache-new" \
           --build-arg REPO=${{ github.repository }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
@@ -181,7 +181,7 @@ jobs:
           docker buildx build \
           --target=compile-stage2 \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,dest=/tmp/.buildx-cache-new" \
+          --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache-new" \
           --build-arg REPO=${{ github.repository }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
@@ -224,7 +224,7 @@ jobs:
           docker buildx build \
           --target=compile-stage3 \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,dest=/tmp/.buildx-cache-new" \
+          --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache-new" \
           --build-arg REPO=${{ github.repository }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
@@ -270,7 +270,7 @@ jobs:
           docker buildx build \
           --target=runtime-image \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,dest=/tmp/.buildx-cache" \
+          --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache" \
           --build-arg REPO=${{ github.repository }} \
           --tag ${{ needs.prepare.outputs.IMAGE_ID }}:${{ needs.prepare.outputs.VERSION }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
