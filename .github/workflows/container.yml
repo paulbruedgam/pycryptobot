@@ -86,7 +86,7 @@ jobs:
         id: cache
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
           restore-keys: |
             ${{ runner.os }}-buildx-
 
@@ -129,7 +129,7 @@ jobs:
         id: cache
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
           restore-keys: |
             ${{ runner.os }}-buildx-
 
@@ -172,7 +172,7 @@ jobs:
         id: cache
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
           restore-keys: |
             ${{ runner.os }}-buildx-
 
@@ -215,7 +215,7 @@ jobs:
         id: cache
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
           restore-keys: |
             ${{ runner.os }}-buildx-
 
