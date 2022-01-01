@@ -95,11 +95,17 @@ jobs:
           docker buildx build \
           --target=compile-base \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,dest=/tmp/.buildx-cache" \
+          --cache-to "type=local,dest=/tmp/.buildx-cache-new" \
           --build-arg REPO=${{ github.repository }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile-github .
+
+      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -132,11 +138,17 @@ jobs:
           docker buildx build \
           --target=compile-stage1 \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,dest=/tmp/.buildx-cache" \
+          --cache-to "type=local,dest=/tmp/.buildx-cache-new" \
           --build-arg REPO=${{ github.repository }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile-github .
+
+      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -169,11 +181,17 @@ jobs:
           docker buildx build \
           --target=compile-stage2 \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,dest=/tmp/.buildx-cache" \
+          --cache-to "type=local,dest=/tmp/.buildx-cache-new" \
           --build-arg REPO=${{ github.repository }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile-github .
+
+      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -206,11 +224,17 @@ jobs:
           docker buildx build \
           --target=compile-stage3 \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,dest=/tmp/.buildx-cache" \
+          --cache-to "type=local,dest=/tmp/.buildx-cache-new" \
           --build-arg REPO=${{ github.repository }} \
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile-github .
+
+      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
