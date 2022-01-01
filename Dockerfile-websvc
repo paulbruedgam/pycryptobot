@@ -1,13 +1,10 @@
-FROM python:3.9.1-slim-buster
+# syntax=docker/dockerfile:1
 
-WORKDIR /app
+ARG REPO=whittlem/pycryptobot
 
-COPY requirements.txt /app/
+FROM ghcr.io/${REPO}/pycryptobot:latest
 
-RUN python -m pip install -U pip &&\
-      python -m pip install --no-cache-dir -r requirements.txt
-
-COPY . /app/
+EXPOSE 5000/tcp
 
 # Pass parameters to the container run or mount your config.json into /app/
 ENTRYPOINT [ "python3", "-u", "websvc.py" ]

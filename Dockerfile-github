@@ -67,6 +67,9 @@ WORKDIR /app
 # Make sure we use the virtualenv:
 ENV PATH="/app/bin:$PATH"
 
+# Use as many cores as possible during build of c extensions
+ENV MAKEFLAGS="-j$(nproc)"
+
 COPY requirements.txt .
 
 # Use docker buildkit for faster builds and cache pip
