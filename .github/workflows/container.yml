@@ -88,6 +88,8 @@ jobs:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
           restore-keys: |
+            ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
+            ${{ runner.os }}-buildx-${{ github.sha }}-
             ${{ runner.os }}-buildx-
 
       - name: Build Image
@@ -131,6 +133,8 @@ jobs:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
           restore-keys: |
+            ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
+            ${{ runner.os }}-buildx-${{ github.sha }}-
             ${{ runner.os }}-buildx-
 
       - name: Build Image
@@ -174,6 +178,8 @@ jobs:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
           restore-keys: |
+            ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
+            ${{ runner.os }}-buildx-${{ github.sha }}-
             ${{ runner.os }}-buildx-
 
       - name: Build Image
@@ -217,6 +223,8 @@ jobs:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
           restore-keys: |
+            ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
+            ${{ runner.os }}-buildx-${{ github.sha }}-
             ${{ runner.os }}-buildx-
 
       - name: Log into registry
