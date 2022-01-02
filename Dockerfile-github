@@ -76,7 +76,7 @@ COPY requirements.txt .
 # hadolint ignore=DL3013,DL3042
 RUN python3 -m pip install \
       --upgrade \
-      numpy pip setuptools wheel \
+      pip scipy setuptools wheel \
     && sed -i '/^pytest/d' requirements.txt \
     && sed -E '/^statsmodels/d' requirements.txt > requirements_part1.txt \
     && grep -E '^statsmodels' requirements.txt > requirements_part2.txt
