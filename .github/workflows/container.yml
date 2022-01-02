@@ -66,7 +66,7 @@ jobs:
 
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
-  build_base:
+  build_stage1:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     needs: prepare
@@ -95,52 +95,7 @@ jobs:
       - name: Build Image
         run: |
           docker buildx build \
-          --target=compile-base \
-          --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache-new" \
-          --build-arg REPO=${{ github.repository }} \
-          --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
-          --output "type=image,push=false" \
-          --file Dockerfile-github .
-
-      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
-  # Build and push image to GitHub Packages.
-  # See also https://docs.docker.com/docker-hub/builds/
-  build_stage1:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    needs: [prepare, build_base]
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-      
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        id: cache
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
-            ${{ runner.os }}-buildx-${{ github.sha }}-
-            ${{ runner.os }}-buildx-
-
-      - name: Build Image
-        run: |
-          docker buildx build \
-          --target=compile-stage1 \
+          --target=build-stage1 \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache-new" \
           --build-arg REPO=${{ github.repository }} \
@@ -185,7 +140,95 @@ jobs:
       - name: Build Image
         run: |
           docker buildx build \
-          --target=compile-stage2 \
+          --target=build-stage2 \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache-new" \
+          --build-arg REPO=${{ github.repository }} \
+          --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
+          --output "type=image,push=false" \
+          --file Dockerfile-github .
+
+      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  # Build and push image to GitHub Packages.
+  # See also https://docs.docker.com/docker-hub/builds/
+  build_stage3:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    needs: [prepare, build_stage2]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
+            ${{ runner.os }}-buildx-${{ github.sha }}-
+            ${{ runner.os }}-buildx-
+
+      - name: Build Image
+        run: |
+          docker buildx build \
+          --target=build-stage3 \
+          --cache-from "type=local,src=/tmp/.buildx-cache" \
+          --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache-new" \
+          --build-arg REPO=${{ github.repository }} \
+          --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
+          --output "type=image,push=false" \
+          --file Dockerfile-github .
+
+      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  build_stage4:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    needs: [prepare, build_stage3]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
+            ${{ runner.os }}-buildx-${{ github.sha }}-
+            ${{ runner.os }}-buildx-
+
+      - name: Build Image
+        run: |
+          docker buildx build \
+          --target=build-stage4 \
           --cache-from "type=local,src=/tmp/.buildx-cache" \
           --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache-new" \
           --build-arg REPO=${{ github.repository }} \
@@ -204,7 +247,7 @@ jobs:
   push:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
-    needs: [prepare, build_stage2]
+    needs: [prepare, build_stage4]
 
     steps:
       - uses: actions/checkout@v2
