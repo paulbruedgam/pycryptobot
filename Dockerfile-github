@@ -78,8 +78,8 @@ RUN python3 -m pip install \
       --upgrade \
       numpy pip setuptools wheel \
     && sed -i '/^pytest/d' requirements.txt \
-    && sed -E '/^statsmodels/d' requirements.txt > requirements_part2.txt \
-    && grep -E '^statsmodels' requirements.txt > requirements_part3.txt
+    && sed -E '/^statsmodels/d' requirements.txt > requirements_stage2.txt \
+    && grep -E '^statsmodels' requirements.txt > requirements_stage4.txt
 
 # Build Image Part 2
 FROM build-stage1 as build-stage2
@@ -88,7 +88,7 @@ FROM build-stage1 as build-stage2
 # hadolint ignore=DL3042
 RUN python3 -m pip install \
       --upgrade \
-      --requirement requirements_part1.txt
+      --requirement requirements_stage2.txt
 
 # Build Image Part 3
 FROM build-stage2 as build-stage3
@@ -106,7 +106,7 @@ FROM build-stage3 as build-stage4
 # hadolint ignore=DL3042
 RUN python3 -m pip install \
       --upgrade \
-      --requirement requirements_part2.txt \
+      --requirement requirements_stage4.txt \
     && python3 -m pip uninstall --yes wheel \
     && rm -f requirements*.txt
 
