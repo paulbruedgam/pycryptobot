@@ -10,7 +10,7 @@ on:
 
     # Publish `v1.2.3` tags as releases.
     tags:
-      - '**' # All tags kick off a new container build
+      - '**' # All tags kick off a new container build Save history ad 5.0.x etc
 
   # Run tests for any PRs.
   pull_request:

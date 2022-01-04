@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 from models.AppState import AppState
+from models.chat import telegram
 from models.exchange.Granularity import Granularity
 from models.helper.LogHelper import Logger
 from models.helper.MarginHelper import calculate_margin
@@ -45,6 +46,7 @@ telegram_bot = TelegramBotHelper(app)
 
 s = sched.scheduler(time.time, time.sleep)
 
+pd.set_option('display.float_format', '{:.8f}'.format)
 
 def signal_handler(signum, frame):
     if signum == 2:
@@ -384,9 +386,7 @@ def executeJob(
                     executeJob,
                     (sc, _app, _state, _technical_analysis, _websocket),
                 )
-    # change_pcnt_high set to 0 here to prevent errors on some tokens for some users.
-    # Need to track down main source of error.  This allows bots to launch in those instances.
-    change_pcnt_high = 0
+
     if len(df_last) > 0:
         now = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -480,7 +480,7 @@ def executeJob(
         _state.action = strategy.getAction(_app, price, current_sim_date)
 
         immediate_action = False
-        margin, profit, sell_fee = 0, 0, 0
+        margin, profit, sell_fee, change_pcnt_high = 0, 0, 0, 0
 
         # Reset the TA so that the last record is the current sim date
         # To allow for calculations to be done on the sim date being processed
@@ -548,6 +548,7 @@ def executeJob(
             # handle immediate sell actions
             if strategy.isSellTrigger(
                 _app,
+                _state,
                 price,
                 _technical_analysis.getTradeExit(price),
                 margin,
@@ -560,7 +561,7 @@ def executeJob(
                 immediate_action = True
 
         # handle overriding wait actions (e.g. do not sell if sell at loss disabled!, do not buy in bull if bull only)
-        if strategy.isWaitTrigger(_app, margin, goldencross):
+        if immediate_action is not True and strategy.isWaitTrigger(_app, margin, goldencross):
             _state.action = "WAIT"
             immediate_action = False
 
@@ -577,8 +578,8 @@ def executeJob(
 
         # If buy signal, save the price and check for decrease/increase before buying.
         trailing_buy_logtext = ""
-        if _state.action == "BUY" and immediate_action != True:
-            _state.action, _state.trailing_buy, trailing_buy_logtext = strategy.checkTrailingBuy(_app, _state, price)
+        if _state.action == "BUY" and immediate_action is not True:
+            _state.action, _state.trailing_buy, trailing_buy_logtext, immediate_action = strategy.checkTrailingBuy(_app, _state, price)
 
         bullbeartext = ""
         if _app.disableBullOnly() is True or (
@@ -604,7 +605,10 @@ def executeJob(
             # work with this precision. It should save a couple of `precision` uses, one for each `truncate()` call.
             truncate = functools.partial(_truncate, n=precision)
 
-            price_text = "Close: " + str(price)
+            if immediate_action:
+                price_text = str(price)
+            else:
+                price_text = "Close: " + str(price)
             ema_text = ""
             if _app.disableBuyEMA() is False:
                 ema_text = _app.compare(
@@ -1797,14 +1801,17 @@ def executeJob(
                     + "%",
                 )
 
-            if _state.last_action == "BUY":
+            if _state.last_action == "BUY" and _state.in_open_trade:
                 # update margin for telegram bot
                 telegram_bot.addmargin(
-                    str(_truncate(margin, 4) + "%"),
-                    str(_truncate(profit, 2)),
+                    str(_truncate(margin, 4) + "%") if _state.in_open_trade == True else " ",
+                    str(_truncate(profit, 2)) if _state.in_open_trade == True else " ",
                     price,
                     change_pcnt_high,
                 )
+            
+            # Update the watchdog_ping
+            telegram_bot.updatewatchdogping()
 
             # decrement ignored iteration
             if _app.isSimulation() and _app.smart_switch:
