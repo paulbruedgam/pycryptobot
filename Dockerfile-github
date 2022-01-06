@@ -106,6 +106,7 @@ FROM build-stage3 as build-stage4
 # hadolint ignore=DL3013,DL3042
 RUN python3 -m pip install \
       --upgrade \
+      --no-deps \
       scipy
 
 # Build Image Part 5
