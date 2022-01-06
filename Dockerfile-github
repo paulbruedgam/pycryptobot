@@ -76,9 +76,12 @@ COPY requirements.txt .
 # hadolint ignore=DL3013,DL3042
 RUN python3 -m pip install \
       --upgrade \
-      numpy pip setuptools wheel \
+      pip pip-tools setuptools wheel \
+    && python3 -m pip install \
+      --upgrade \
+      Cython>=0.29.18 numpy==1.19.3 pybind11>=2.4.3 pythran>=0.9.12 \
     && sed -i '/^pytest/d' requirements.txt \
-    && sed -E '/^statsmodels/d' requirements.txt > requirements_stage2.txt \
+    && sed -E '/^statsmodels/d' requirements.txt > requirements_stage3.txt \
     && grep -E '^statsmodels' requirements.txt > requirements_stage4.txt
 
 # Build Image Part 2
@@ -88,7 +91,9 @@ FROM build-stage1 as build-stage2
 # hadolint ignore=DL3042
 RUN python3 -m pip install \
       --upgrade \
-      --requirement requirements_stage2.txt
+      --no-build-isolation \
+      --no-deps \
+      scipy
 
 # Build Image Part 3
 FROM build-stage2 as build-stage3
@@ -97,28 +102,19 @@ FROM build-stage2 as build-stage3
 # hadolint ignore=DL3013,DL3042
 RUN python3 -m pip install \
       --upgrade \
-      Cython>=0.29.18 pybind11>=2.4.3 pythran>=0.9.12
+      --requirement requirements_stage3.txt
 
 # Build Image Part 4
 FROM build-stage3 as build-stage4
-
-# Use docker buildkit for faster builds and cache pip
-# hadolint ignore=DL3013,DL3042
-RUN python3 -m pip install \
-      --upgrade \
-      --no-deps \
-      scipy
-
-# Build Image Part 5
-FROM build-stage4 as build-stage5
 
 # Use docker buildkit for faster builds and cache pip
 # hadolint ignore=DL3042
 RUN python3 -m pip install \
       --upgrade \
       --requirement requirements_stage4.txt \
-    && python3 -m pip uninstall --yes wheel \
-    && rm -f requirements*.txt
+    && pip-sync requirements.txt \
+    && python3 -m pip uninstall --yes pip-tools wheel \
+    && rm -f requirements_*.txt
 
 COPY . /app
 
@@ -151,7 +147,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 WORKDIR /app
 
-COPY --chown=pycryptobot:pycryptobot --from=build-stage5 /app /app
+COPY --chown=pycryptobot:pycryptobot --from=build-stage4 /app /app
 
 USER pycryptobot
 
