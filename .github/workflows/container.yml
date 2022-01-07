@@ -86,10 +86,11 @@ jobs:
         id: cache
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
+          key: ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
-            ${{ runner.os }}-buildx-${{ github.sha }}-
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-
             ${{ runner.os }}-buildx-
 
       - name: Build Image
@@ -125,10 +126,11 @@ jobs:
         id: cache
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
+          key: ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
-            ${{ runner.os }}-buildx-${{ github.sha }}-
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-
             ${{ runner.os }}-buildx-
 
       - name: Build Image
@@ -164,10 +166,11 @@ jobs:
         id: cache
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
+          key: ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
-            ${{ runner.os }}-buildx-${{ github.sha }}-
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-
             ${{ runner.os }}-buildx-
 
       - name: Build Image
@@ -203,10 +206,11 @@ jobs:
         id: cache
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
+          key: ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
-            ${{ runner.os }}-buildx-${{ github.sha }}-
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-
             ${{ runner.os }}-buildx-
 
       - name: Build Image
@@ -242,10 +246,11 @@ jobs:
         id: cache
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
+          key: ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.job }}
-            ${{ runner.os }}-buildx-${{ github.sha }}-
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-
+            ${{ runner.os }}-buildx-${{ github.ref_name }}-
             ${{ runner.os }}-buildx-
 
       - name: Log into registry
