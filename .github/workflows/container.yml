@@ -103,12 +103,6 @@ jobs:
           --output "type=image,push=false" \
           --file Dockerfile-github .
 
-      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
   build_stage2:
@@ -147,12 +141,6 @@ jobs:
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile-github .
-
-      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -193,12 +181,6 @@ jobs:
           --output "type=image,push=false" \
           --file Dockerfile-github .
 
-      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
   build_stage4:
@@ -237,12 +219,6 @@ jobs:
           --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
           --output "type=image,push=false" \
           --file Dockerfile-github .
-
-      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -301,12 +277,20 @@ jobs:
         run: |
           docker buildx imagetools inspect ${{ needs.prepare.outputs.IMAGE_ID }}:${{ needs.prepare.outputs.VERSION }}
 
+      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
   test:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     needs: [prepare, push]
 
     steps:
+      - uses: actions/checkout@v2
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
