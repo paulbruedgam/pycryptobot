@@ -16,9 +16,11 @@ on:
   pull_request:
 
 env:
-  IMAGE_NAME: pycryptobot
+  BUILD_CACHE: /tmp/.buildx-cache
+  BUILD_PLATFORM: linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64
   # Enable Docker Buildkit
   DOCKER_BUILDKIT: 1
+  IMAGE_NAME: pycryptobot
 
 jobs:
   lint:
@@ -39,8 +41,8 @@ jobs:
     needs: lint
     # Map a step output to a job output
     outputs:
-      IMAGE_ID: ${{ steps.tag_image.outputs.IMAGE_ID }}
-      VERSION: ${{ steps.tag_image.outputs.VERSION }}
+      DOCKER_REPOSITORY: ${{ steps.tag_image.outputs.DOCKER_REPOSITORY }}
+      DOCKER_TAG: ${{ steps.tag_image.outputs.DOCKER_TAG }}
 
     steps:
       - uses: actions/checkout@v2
@@ -48,21 +50,20 @@ jobs:
       - name: Tag Image
         id: tag_image
         run: |
-          IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
+          DOCKER_REPOSITORY=ghcr.io/${{ github.repository }}/$IMAGE_NAME
 
           # Change all uppercase to lowercase
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          DOCKER_REPOSITORY=$(echo $DOCKER_REPOSITORY | tr '[A-Z]' '[a-z]')
 
-          # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          DOCKER_TAG=${{ github.ref_name }}
 
           # Use Docker `latest` tag convention
-          [ "$VERSION" == "main" ] && VERSION=latest
+          [ "$DOCKER_TAG" == "main" ] && DOCKER_TAG=latest
 
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-          echo '::set-output name=IMAGE_ID::'$IMAGE_ID
-          echo '::set-output name=VERSION::'$VERSION
+          echo DOCKER_REPOSITORY=$DOCKER_REPOSITORY
+          echo DOCKER_TAG=$DOCKER_TAG
+          echo '::set-output name=DOCKER_REPOSITORY::'$DOCKER_REPOSITORY
+          echo '::set-output name=DOCKER_TAG::'$DOCKER_TAG
 
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -85,7 +86,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          path: /tmp/.buildx-cache
+          path: ${BUILD_CACHE}
           key: ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
@@ -97,10 +98,10 @@ jobs:
         run: |
           docker buildx build \
           --target=build-stage1 \
-          --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache" \
+          --cache-from "type=local,src=${BUILD_CACHE}" \
+          --cache-to "type=local,mode=max,dest=${BUILD_CACHE}" \
           --build-arg REPO=${{ github.repository }} \
-          --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
+          --platform ${BUILD_PLATFORM} \
           --output "type=image,push=false" \
           --file Dockerfile-github .
 
@@ -125,7 +126,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          path: /tmp/.buildx-cache
+          path: ${BUILD_CACHE}
           key: ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
@@ -137,10 +138,10 @@ jobs:
         run: |
           docker buildx build \
           --target=build-stage2 \
-          --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache" \
+          --cache-from "type=local,src=${BUILD_CACHE}" \
+          --cache-to "type=local,mode=max,dest=${BUILD_CACHE}" \
           --build-arg REPO=${{ github.repository }} \
-          --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
+          --platform ${BUILD_PLATFORM} \
           --output "type=image,push=false" \
           --file Dockerfile-github .
 
@@ -165,7 +166,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          path: /tmp/.buildx-cache
+          path: ${BUILD_CACHE}
           key: ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
@@ -177,10 +178,10 @@ jobs:
         run: |
           docker buildx build \
           --target=build-stage3 \
-          --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache" \
+          --cache-from "type=local,src=${BUILD_CACHE}" \
+          --cache-to "type=local,mode=max,dest=${BUILD_CACHE}" \
           --build-arg REPO=${{ github.repository }} \
-          --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
+          --platform ${BUILD_PLATFORM} \
           --output "type=image,push=false" \
           --file Dockerfile-github .
 
@@ -205,7 +206,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          path: /tmp/.buildx-cache
+          path: ${BUILD_CACHE}
           key: ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
@@ -217,10 +218,10 @@ jobs:
         run: |
           docker buildx build \
           --target=build-stage4 \
-          --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache" \
+          --cache-from "type=local,src=${BUILD_CACHE}" \
+          --cache-to "type=local,mode=max,dest=${BUILD_CACHE}" \
           --build-arg REPO=${{ github.repository }} \
-          --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
+          --platform ${BUILD_PLATFORM} \
           --output "type=image,push=false" \
           --file Dockerfile-github .
 
@@ -245,7 +246,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          path: /tmp/.buildx-cache
+          path: ${BUILD_CACHE}
           key: ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.job }}-${{ github.sha }}
@@ -260,33 +261,36 @@ jobs:
         run: |
           docker buildx build \
           --target=runtime-image \
-          --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --cache-to "type=local,mode=max,dest=/tmp/.buildx-cache-new" \
+          --cache-from "type=local,src=${BUILD_CACHE}" \
+          --cache-to "type=local,mode=max,dest=${BUILD_CACHE}-new" \
           --build-arg REPO=${{ github.repository }} \
-          --tag ${{ needs.prepare.outputs.IMAGE_ID }}:${{ needs.prepare.outputs.VERSION }} \
-          --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
+          --tag ${{ needs.prepare.outputs.DOCKER_REPOSITORY }}:${{ needs.prepare.outputs.DOCKER_TAG }} \
+          --tag ${{ needs.prepare.outputs.DOCKER_REPOSITORY }}:${{ github.sha }} \
+          --platform ${BUILD_PLATFORM} \
           --output "type=image,push=false" \
           --file Dockerfile-github .
 
       # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
       - name: Move cache
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          rm -rf ${BUILD_CACHE}
+          mv ${BUILD_CACHE}-new ${BUILD_CACHE}
 
       - name: Push Image
         run: |
           docker buildx build \
-          --cache-from "type=local,src=/tmp/.buildx-cache" \
-          --tag ${{ needs.prepare.outputs.IMAGE_ID }}:${{ needs.prepare.outputs.VERSION }} \
-          --platform linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64 \
+          --cache-from "type=local,src=${BUILD_CACHE}" \
+          --tag ${{ needs.prepare.outputs.DOCKER_REPOSITORY }}:${{ needs.prepare.outputs.DOCKER_TAG }} \
+          --tag ${{ needs.prepare.outputs.DOCKER_REPOSITORY }}:${{ github.sha }} \
+          --platform ${BUILD_PLATFORM} \
           --output "type=image,push=true" \
           --file Dockerfile-github .
 
       - name: Inspect image
         if: success()
         run: |
-          docker buildx imagetools inspect ${{ needs.prepare.outputs.IMAGE_ID }}:${{ needs.prepare.outputs.VERSION }}
+          docker buildx imagetools inspect ${{ needs.prepare.outputs.DOCKER_REPOSITORY }}:${{ needs.prepare.outputs.DOCKER_TAG }}
+          docker buildx imagetools inspect ${{ needs.prepare.outputs.DOCKER_REPOSITORY }}:${{ github.sha }}
 
   test:
     runs-on: ubuntu-latest
@@ -296,10 +300,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Log into registry
+        run: echo "${{ secrets.PACKAGE_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "${{ needs.prepare.outputs.IMAGE_ID }}:${{ needs.prepare.outputs.VERSION }}"
+          image-ref: "${{ needs.prepare.outputs.DOCKER_REPOSITORY }}:${{ github.sha }}"
           format: 'template' 
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
