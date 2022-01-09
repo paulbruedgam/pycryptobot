@@ -17,7 +17,11 @@ on:
 
 env:
   BUILD_CACHE: /tmp/.buildx-cache
-  BUILD_PLATFORM: linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64
+  BUILD_PLATFORM: |
+    linux/arm/v6
+    linux/arm/v7
+    linux/arm64
+    linux/amd64
   # Enable Docker Buildkit
   DOCKER_BUILDKIT: 1
   IMAGE_NAME: pycryptobot
