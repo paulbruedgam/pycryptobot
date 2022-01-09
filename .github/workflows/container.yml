@@ -16,7 +16,6 @@ on:
   pull_request:
 
 env:
-  BUILD_CACHE: /tmp/.buildx-cache
   BUILD_PLATFORM: |
     linux/arm/v6
     linux/arm/v7
@@ -220,18 +219,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           file: Dockerfile-github
-          platforms: ${BUILD_PLATFORM}
+          platforms: ${{ env.BUILD_PLATFORM }}
           push: true
           tags: |
             ${{ needs.prepare.outputs.DOCKER_REPOSITORY }}:${{ needs.prepare.outputs.DOCKER_TAG }}
             ${{ needs.prepare.outputs.DOCKER_REPOSITORY }}:${{ github.sha }}
           target: runtime-image
-
-      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
-      - name: Move cache
-        run: |
-          rm -rf ${BUILD_CACHE}
-          mv ${BUILD_CACHE}-new ${BUILD_CACHE}
 
       - name: Inspect image
         if: success()
