@@ -96,7 +96,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           file: Dockerfile-github
-          platforms: ${BUILD_PLATFORM}
+          platforms: ${{ env.BUILD_PLATFORM }}
           push: false
           target: build-stage1
 
@@ -126,7 +126,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           file: Dockerfile-github
-          platforms: ${BUILD_PLATFORM}
+          platforms: ${{ env.BUILD_PLATFORM }}
           push: false
           target: build-stage2
 
@@ -156,7 +156,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           file: Dockerfile-github
-          platforms: ${BUILD_PLATFORM}
+          platforms: ${{ env.BUILD_PLATFORM }}
           push: false
           target: build-stage3
 
@@ -186,7 +186,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           file: Dockerfile-github
-          platforms: ${BUILD_PLATFORM}
+          platforms: ${{ env.BUILD_PLATFORM }}
           push: false
           target: build-stage4
 
