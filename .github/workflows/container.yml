@@ -47,6 +47,7 @@ jobs:
     outputs:
       DOCKER_REPOSITORY: ${{ steps.tag_image.outputs.DOCKER_REPOSITORY }}
       DOCKER_TAG: ${{ steps.tag_image.outputs.DOCKER_TAG }}
+      FILES_CHANGED: ${{ steps.changed_files.outputs.files_changed }}
 
     steps:
       - name: Checkout
@@ -70,11 +71,19 @@ jobs:
           echo '::set-output name=DOCKER_REPOSITORY::'$DOCKER_REPOSITORY
           echo '::set-output name=DOCKER_TAG::'$DOCKER_TAG
 
+      - name: Verify Dockerfile changed
+        uses: tj-actions/verify-changed-files@v8.8
+        id: changed_files
+        with:
+          files: |
+             Dockerfile-github
+             requirements.txt
+
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
   build_stage1:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && ${{ needs.prepare.outputs.FILES_CHANGED }}
     needs: prepare
 
     steps:
@@ -104,7 +113,7 @@ jobs:
   # See also https://docs.docker.com/docker-hub/builds/
   build_stage2:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && ${{ needs.prepare.outputs.FILES_CHANGED }}
     needs: [prepare, build_stage1]
 
     steps:
@@ -134,7 +143,7 @@ jobs:
   # See also https://docs.docker.com/docker-hub/builds/
   build_stage3:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && ${{ needs.prepare.outputs.FILES_CHANGED }}
     needs: [prepare, build_stage2]
 
     steps:
