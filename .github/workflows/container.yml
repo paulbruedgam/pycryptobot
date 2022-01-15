@@ -83,7 +83,7 @@ jobs:
   # See also https://docs.docker.com/docker-hub/builds/
   build_stage1:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && ${{ needs.prepare.outputs.FILES_CHANGED }}
+    if: github.event_name == 'push' && ${{ needs.prepare.outputs.FILES_CHANGED }} == 'true'
     needs: prepare
 
     steps:
@@ -113,7 +113,7 @@ jobs:
   # See also https://docs.docker.com/docker-hub/builds/
   build_stage2:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && ${{ needs.prepare.outputs.FILES_CHANGED }}
+    if: github.event_name == 'push' && ${{ needs.prepare.outputs.FILES_CHANGED }} == 'true'
     needs: [prepare, build_stage1]
 
     steps:
@@ -143,7 +143,7 @@ jobs:
   # See also https://docs.docker.com/docker-hub/builds/
   build_stage3:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && ${{ needs.prepare.outputs.FILES_CHANGED }}
+    if: github.event_name == 'push' && ${{ needs.prepare.outputs.FILES_CHANGED }} == 'true'
     needs: [prepare, build_stage2]
 
     steps:
