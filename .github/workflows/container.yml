@@ -53,13 +53,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Get changed files
         id: changed_files_list
         uses: tj-actions/changed-files@v13.1
-        with:
-          since_last_remote_commit: "true"
 
       - name: Verify Dockerfile or requirements.txt changed
         uses: tj-actions/changed-files@v13.1
@@ -68,7 +66,6 @@ jobs:
           files: |
              Dockerfile-github
              requirements.txt
-          since_last_remote_commit: "true"
 
       - name: Tag Image
         id: tag_image
@@ -93,7 +90,9 @@ jobs:
   # See also https://docs.docker.com/docker-hub/builds/
   build_stage1:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && ${{ needs.prepare.outputs.FILES_CHANGED }} == 'true'
+    if: |
+      github.event_name == 'push' &&
+      contains(needs.prepare.outputs.FILES_CHANGED, 'true')
     needs: prepare
 
     steps:
@@ -123,7 +122,9 @@ jobs:
   # See also https://docs.docker.com/docker-hub/builds/
   build_stage2:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && ${{ needs.prepare.outputs.FILES_CHANGED }} == 'true'
+    if: |
+      github.event_name == 'push' &&
+      contains(needs.prepare.outputs.FILES_CHANGED, 'true')
     needs: [prepare, build_stage1]
 
     steps:
@@ -153,7 +154,9 @@ jobs:
   # See also https://docs.docker.com/docker-hub/builds/
   build_stage3:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && ${{ needs.prepare.outputs.FILES_CHANGED }} == 'true'
+    if: |
+      github.event_name == 'push' &&
+      contains(needs.prepare.outputs.FILES_CHANGED, 'true')
     needs: [prepare, build_stage2]
 
     steps:
