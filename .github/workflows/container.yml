@@ -47,7 +47,7 @@ jobs:
     outputs:
       DOCKER_REPOSITORY: ${{ steps.tag_image.outputs.DOCKER_REPOSITORY }}
       DOCKER_TAG: ${{ steps.tag_image.outputs.DOCKER_TAG }}
-      FILES_CHANGED: ${{ steps.changed_files.outputs.any_changed }}
+      FILES_CHANGED: ${{ steps.changed_files.outputs.only_changed }}
 
     steps:
       - name: Checkout
@@ -85,7 +85,7 @@ jobs:
 
           echo DOCKER_REPOSITORY=$DOCKER_REPOSITORY
           echo DOCKER_TAG=$DOCKER_TAG
-          echo FILES_CHANGED=${{ steps.changed_files.outputs.any_changed }}
+          echo FILES_CHANGED=${{ steps.changed_files.outputs.only_changed }}
           echo '::set-output name=DOCKER_REPOSITORY::'$DOCKER_REPOSITORY
           echo '::set-output name=DOCKER_TAG::'$DOCKER_TAG
 
