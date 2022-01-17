@@ -53,7 +53,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          fetch-depth: 2 # retrieve the preceding commit
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed_files_list
+        uses: tj-actions/changed-files@v13.1
+        with:
+          since_last_remote_commit: "true"
+
+      - name: Verify Dockerfile or requirements.txt changed
+        uses: tj-actions/changed-files@v13.1
+        id: changed_files
+        with:
+          files: |
+             Dockerfile-github
+             requirements.txt
+          since_last_remote_commit: "true"
 
       - name: Tag Image
         id: tag_image
@@ -70,23 +85,9 @@ jobs:
 
           echo DOCKER_REPOSITORY=$DOCKER_REPOSITORY
           echo DOCKER_TAG=$DOCKER_TAG
+          echo FILES_CHANGED=${{ steps.changed_files.outputs.any_changed }}
           echo '::set-output name=DOCKER_REPOSITORY::'$DOCKER_REPOSITORY
           echo '::set-output name=DOCKER_TAG::'$DOCKER_TAG
-
-      - name: Get changed files
-        id: changed_files_list
-        uses: tj-actions/changed-files@v13.1
-        with:
-          since_last_remote_commit: "true"
-
-      - name: Verify Dockerfile or requirements.txt changed
-        uses: tj-actions/changed-files@v13.1
-        id: changed_files
-        with:
-          files: |
-             Dockerfile-github
-             requirements.txt
-          since_last_remote_commit: "true"
 
   # Build and push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
