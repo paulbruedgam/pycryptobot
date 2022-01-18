@@ -79,7 +79,7 @@ RUN python3 -m pip install \
       --upgrade \
       pip pip-tools setuptools wheel \
     && python3 -m pip wheel \
-        --wheel-dir /wheel \ 
+        --wheel-dir /wheel \
         numpy \
     && python3 -m pip install \
       --upgrade \
