@@ -25,7 +25,7 @@ FROM python:3.9-slim-bullseye AS build-stage1
 #
 # - NumPy (https://numpy.org/devdocs/user/building.html)
 #   - Python packages: Cython
-#   - Linux packages (dev): gcc gfortran liblapack-dev libopenblas-dev
+#   - Linux packages (dev): gcc gfortran libatlas-base-dev liblapack-dev libopenblas-dev
 #   - Linux packages (prod): libatlas3-base libopenblas-base
 #   - ToDo:
 #       - https://numpy.org/devdocs/dev/development_environment.html#running-tests
@@ -53,6 +53,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get install --no-install-recommends -qq \
         build-essential \
         gfortran \
+        libatlas-base-dev \
         libblas-dev \
         libjpeg62-turbo-dev \
         liblapack-dev \
@@ -78,6 +79,7 @@ RUN python3 -m pip install \
       --upgrade \
       pip pip-tools setuptools wheel \
     && python3 -m pip wheel \
+        --wheel-dir /wheel \ 
         numpy \
     && python3 -m pip install \
       --upgrade \
@@ -97,7 +99,7 @@ RUN python3 -m pip install \
       scipy==1.7.3 \
     && python3 -m pip install \
       --upgrade \
-      numpy
+      /wheel/numpy*.whl
 
 # Build Image Part 3
 FROM build-stage2 as build-stage3

@@ -25,7 +25,7 @@ FROM python:3.9-slim-bullseye AS compile-image
 #
 # - NumPy (https://numpy.org/devdocs/user/building.html)
 #   - Python packages: Cython
-#   - Linux packages (dev): gcc gfortran liblapack-dev libopenblas-dev
+#   - Linux packages (dev): gcc gfortran libatlas-base-dev liblapack-dev libopenblas-dev
 #   - Linux packages (prod): libatlas3-base libopenblas-base
 #   - ToDo:
 #       - https://numpy.org/devdocs/dev/development_environment.html#running-tests
@@ -53,6 +53,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get install --no-install-recommends -qq \
         build-essential \
         gfortran \
+        libatlas-base-dev \
         libblas-dev \
         libjpeg62-turbo-dev \
         liblapack-dev \
@@ -67,13 +68,25 @@ WORKDIR /app
 # Make sure we use the virtualenv:
 ENV PATH="/app/bin:$PATH"
 
+# Use as many cores as possible during build of c extensions
+ENV MAKEFLAGS="-j$(nproc)"
+
 COPY requirements.txt .
 
-ARG CACHE_DIR="/tmp/.buildx-cache/.cache/pip"
+ARG CACHE_DIR="/root/.cache/pip"
 # Use docker buildkit for faster builds and cache pip
 # hadolint ignore=DL3013,DL3042
-RUN --mount=type=cache,mode=0755,target=${CACHE_DIR} python3 -m pip install --upgrade numpy pip setuptools wheel \
-    && python3 -m pip install --upgrade --requirement requirements.txt --cache-dir ${CACHE_DIR} \
+RUN --mount=type=cache,mode=0755,target=${CACHE_DIR} \
+    python3 -m pip install \
+      --upgrade \
+      numpy \
+      pip \
+      setuptools \
+      wheel \
+    && python3 -m pip install \
+      --upgrade \
+      --cache-dir ${CACHE_DIR} \
+      --requirement requirements.txt \
     && python3 -m pip uninstall --yes wheel
 
 COPY . /app
